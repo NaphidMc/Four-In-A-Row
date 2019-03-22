@@ -129,7 +129,7 @@ public class BoardStateTest
                                                      {1, 2, 0, 0, 0, 0, 0}});
       
       FourInARowAI ai = new FourInARowAI(state);
-      assertEquals(-100, ai.boardScore(state.boardState, 2));
+      assertEquals(-500, ai.boardScore(state.boardState, 2));
    }
    
    @Test

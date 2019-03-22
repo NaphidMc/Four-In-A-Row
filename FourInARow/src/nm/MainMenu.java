@@ -30,10 +30,9 @@ public class MainMenu
       iPlayHotseat = new Image("resources/button_multiplayer_hotseat.png");
       iPlayOnline = new Image("resources/button_multiplayer_online.png");
       iExit = new Image("resources/button_exit.png");
-      
-      // Initialize button rectangles
+     
+      // Creates rectangle objects to hold button positions and sizes
       int buttonWidth = 278, buttonHeight = 133;
-      // Creates rectangles for the buttons to help detect if the mouse is over them
       bPlayAI = new Rectangle(30, 360, buttonWidth, buttonHeight);
       bPlayHotseat = new Rectangle(374, 360, buttonWidth, buttonHeight);
       bPlayOnline = new Rectangle(700, 360, buttonWidth, buttonHeight);

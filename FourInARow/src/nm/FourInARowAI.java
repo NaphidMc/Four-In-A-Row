@@ -55,7 +55,7 @@ public class FourInARowAI
                   break;
                }
                
-               System.out.println("(" + coordinate[0] + " " + i + ")");
+               // System.out.println("(" + coordinate[0] + " " + i + ")");
                // Assesses possible moves in response by the player
                for(int k = 0; k < 7; k++)
                {
@@ -65,9 +65,9 @@ public class FourInARowAI
                   
                   tempState[playerCoordinate[0]][playerCoordinate[1]] = humanPlayer;
                   int humanScore = boardScore(tempState, aiPlayer);
-                  System.out.println("H: (" + playerCoordinate[0] + " " + k + ") " + humanScore);
-                  for(int[] arr : tempState)
-                     System.out.println(Arrays.toString(arr));
+                  // System.out.println("H: (" + playerCoordinate[0] + " " + k + ") " + humanScore);
+                  // for(int[] arr : tempState)
+                  //   System.out.println(Arrays.toString(arr));
                   scores[i] += humanScore;
                   tempState[playerCoordinate[0]][playerCoordinate[1]] = 0;
                }
@@ -87,7 +87,7 @@ public class FourInARowAI
       ArrayList<Integer> idealMoves = new ArrayList<>();
       for(int i = 0; i < scores.length; i++)
       {
-         if(scores[i] >= highest && board.lowestAvailableSlot(i)[0] != -1)
+         if((scores[i] >= highest || idealMoves.size() == 0) && board.lowestAvailableSlot(i)[0] != -1)
             idealMoves.add(i);
       }
       
