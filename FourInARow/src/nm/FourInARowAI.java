@@ -41,7 +41,7 @@ public class FourInARowAI
          for(int i = 0; i < 7; i++)
          {  
             if(board.lowestAvailableSlot(i, tempState)[0] == -1)
-               scores[i] = -1;
+               scores[i] = Integer.MIN_VALUE;
             else
             {
                int[] coordinate = {board.lowestAvailableSlot(i, tempState)[0], i};
@@ -55,7 +55,7 @@ public class FourInARowAI
                   break;
                }
                
-               // System.out.println("(" + coordinate[0] + " " + i + ")");
+               // System.out.println("****(" + coordinate[0] + " " + i + ")****");
                // Assesses possible moves in response by the player
                for(int k = 0; k < 7; k++)
                {
@@ -78,7 +78,7 @@ public class FourInARowAI
       
       // Gets highest score
       int highest = scores[0];
-      for(int i = 1; i < scores.length; i++)
+      for(int i = 0; i < scores.length; i++)
       {
          if(scores[i] > highest)
             highest = scores[i];
@@ -87,9 +87,11 @@ public class FourInARowAI
       ArrayList<Integer> idealMoves = new ArrayList<>();
       for(int i = 0; i < scores.length; i++)
       {
-         if((scores[i] >= highest || idealMoves.size() == 0) && board.lowestAvailableSlot(i)[0] != -1)
+         if((scores[i] >= highest) && board.lowestAvailableSlot(i)[0] != -1)
             idealMoves.add(i);
       }
+      
+      
       
       // Selects a random move from tied high scores
       int move = 0; 
