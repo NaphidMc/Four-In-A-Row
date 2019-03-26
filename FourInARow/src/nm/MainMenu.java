@@ -11,7 +11,7 @@ import nm.Game.GameMode;
 public class MainMenu
 {
    Game game;
-   Image mainMenuBackground, iPlayAI, iPlayHotseat, iPlayOnline, iExit;
+   public static Image mainMenuBackground, iPlayAI, iPlayHotseat, iPlayOnline, iExit;
    Rectangle bPlayAI, bPlayHotseat, bPlayOnline, bExit;
    boolean hoverPlayAI, hoverPlayHotseat, hoverPlayOnline, hoverExit;
    private final float BUTTON_SCALE_ON_HOVER = 1.2f, DEFAULT_BUTTON_SCALE = 1.0f;
@@ -71,30 +71,12 @@ public class MainMenu
    {
       int mouseX = gc.getInput().getMouseX(),
           mouseY = gc.getInput().getMouseY();
-      
-      // Resets hover variables
-      hoverPlayAI = false;
-      hoverPlayHotseat = false;
-      hoverPlayOnline = false;
-      hoverExit = false;
-      
+
       // Check if the mouse is over individual buttons
-      if(bPlayAI.contains(mouseX, mouseY))
-      {
-         hoverPlayAI = true;
-      }
-      else if(bPlayHotseat.contains(mouseX, mouseY))
-      {
-         hoverPlayHotseat = true;
-      }
-      else if(bPlayOnline.contains(mouseX, mouseY))
-      {
-         hoverPlayOnline = true;
-      }
-      else if(bExit.contains(mouseX, mouseY))
-      {
-         hoverExit = true;
-      }
+      hoverPlayAI = bPlayAI.contains(mouseX, mouseY);
+      hoverPlayHotseat = bPlayHotseat.contains(mouseX, mouseY);
+      hoverPlayOnline = bPlayOnline.contains(mouseX, mouseY);
+      hoverExit = bExit.contains(mouseX, mouseY);
       
       // The user is clicking, check to see if they are on a button
       if(gc.getInput().isMousePressed(0))
@@ -112,7 +94,7 @@ public class MainMenu
    
    public void playVsAI()
    {
-      game.startGame(GameMode.VS_AI);
+      game.gameState = Game.GameState.VS_AI_MENU;
    }
    
    public void playHotseat()

@@ -17,6 +17,7 @@ public class Game extends BasicGame
    // GAME STATE
    Random random;
    MainMenu menu;
+   GameVSAIMenu vsAiMenu;
    BoardState board;
    FourInARowAI ai;
    enum GameMode {
@@ -27,6 +28,7 @@ public class Game extends BasicGame
    GameMode gameMode;
    enum GameState {
       MAIN_MENU,
+      VS_AI_MENU,
       ANIMATION,
       GAME_OVER,
       PLAYER_TURN
@@ -43,16 +45,16 @@ public class Game extends BasicGame
    // Game state integers
    private int whoseTurn, winner = 0, aiPlayer = 2, turn, mouseX, mouseY, greyPieceTime, greyPieceTimer, greyPieceTimerInit = 500, 
                greyPieceTimerAcceleration = 75, minGreyTimer = 150, pieceBlinkState,
-               pieceAlphaValue = 800, pieceAlphaValueMax = 800;
+               pieceAlphaValue = 800, pieceAlphaValueMax = 800, firstPlayer, lineTimer = 500, lineTime;
    private float lineEndX, lineEndY;
    
    // Images
-   private Image iGamepiece, iRestartButton, iBoard, iEmptySlot, iBackground, iBoardBoarder, iGreyPiece;
+   public static Image iGamepiece, iRestartButton, iBoard, iEmptySlot, iBackground, iBoardBoarder, iGreyPiece;
    
    // UI Rectangles
    private Rectangle bRestart;
    
-   private Color[] pieceColors;
+   public static Color[] pieceColors;
    
    TrueTypeFont font;
    
@@ -68,6 +70,7 @@ public class Game extends BasicGame
       super(name);
       
       menu = new MainMenu(this);
+      vsAiMenu = new GameVSAIMenu(this);
       gameState = GameState.MAIN_MENU;
    }
 
@@ -79,6 +82,11 @@ public class Game extends BasicGame
          menu.render(gc, g);
          return;
       } 
+      else if(gameState == GameState.VS_AI_MENU)
+      {
+         vsAiMenu.render(gc, g);
+         return;
+      }
       
       // Draws the board
       // TODO Use real graphics & adjust the scale
@@ -127,8 +135,8 @@ public class Game extends BasicGame
             iGamepiece.draw(getPieceX(locationSelected[1]), getPieceY(locationSelected[0]), 1f, color);
          }
          
-         font.drawString(25, 100, mouseX + ", " + mouseY + " " + (mouseX - BOARD_POSITION_X) / 120); // Writes mouse coordinates
-         // f.drawString(25, 75, "It is player " + whoseTurn + "'s turn");
+         // font.drawString(25, 100, mouseX + ", " + mouseY + " " + (mouseX - BOARD_POSITION_X) / 120); // Writes mouse coordinates
+         font.drawString(5, 100, "It is player " + whoseTurn + "'s turn");
       } 
       else if(gameState == GameState.GAME_OVER) // Game is over, display who won
       {
@@ -138,9 +146,16 @@ public class Game extends BasicGame
             g.setColor(Color.white);
             g.setLineWidth(3.0f);
             int offsetX = iGamepiece.getWidth() / 2, offsetY = iGamepiece.getHeight() / 2;
-            if(allPiecesGrey())
-            g.drawLine(getPieceX(winningPieces[0][1]) + offsetX, getPieceY(winningPieces[0][0]) + offsetY, 
-                       lineEndX, lineEndY);
+            if(allPiecesGrey() && lineTime <= 0)
+            {
+               int lineBeginX = getPieceX(winningPieces[0][1]) + offsetX, lineBeginY = getPieceY(winningPieces[0][0]) + offsetY;
+               g.drawLine(lineBeginX, lineBeginY, 
+                          lineEndX, lineEndY);
+               g.fillOval(lineBeginX - 4, lineBeginY - 4, 8, 8);
+               if(lineEndX == getPieceX(winningPieces[3][1]) + iGamepiece.getWidth() / 2
+                  && lineEndY == getPieceY(winningPieces[3][0]) + iGamepiece.getHeight() / 2)
+                  g.fillOval(lineEndX - 4, lineEndY - 4, 8, 8);
+            }     
          }
          
          g.setColor(Color.black);
@@ -173,12 +188,19 @@ public class Game extends BasicGame
       iBoardBoarder = new Image("resources/board_border.png");
       iGreyPiece = new Image("resources/game_over_piece.png");
       
+      // Sets default piece colors
+      pieceColors = new Color[3];
+      pieceColors[0] = Color.white;
+      pieceColors[1] = new Color(0, 127, 93);
+      pieceColors[2] = new Color(0, 93, 127);
+      
       // Create rectangles for all buttons
       bRestart = new Rectangle(5, 30, 192, 93);
       
       font = new TrueTypeFont(new java.awt.Font("arial", java.awt.Font.BOLD, 18), true);
       random = new Random();
       menu.init();
+      vsAiMenu.init();
    }
 
    @Override
@@ -187,6 +209,11 @@ public class Game extends BasicGame
       if(gameState == GameState.MAIN_MENU)
       {
          menu.update(gc, deltaT);
+         return;
+      }
+      else if(gameState == GameState.VS_AI_MENU)
+      {
+         vsAiMenu.update(gc, deltaT);
          return;
       }
       
@@ -223,17 +250,11 @@ public class Game extends BasicGame
             pieceAlphaValue -= deltaT;
          else if(pieceBlinkState == 1)
             pieceAlphaValue += deltaT;
-         if(pieceAlphaValue <= 250 || pieceAlphaValue >= pieceAlphaValueMax + 150)
-         {
-            if(pieceBlinkState == 0)
-            {
-               pieceBlinkState = 1;
-            }
-            else 
-            {
-               pieceBlinkState = 0;
-            }
-         }
+         
+         if(pieceAlphaValue <= 250 && pieceBlinkState == 0)
+            pieceBlinkState = 1;
+         else if(pieceAlphaValue >= pieceAlphaValueMax + 150 && pieceBlinkState == 1)
+            pieceBlinkState = 0;
       }
       else if(gameState == GameState.GAME_OVER)
       {
@@ -257,37 +278,42 @@ public class Game extends BasicGame
             }
          }
          // Otherwise work on the line
-         else if(lineEndX != getPieceX(winningPieces[3][1]) + iGamepiece.getWidth() / 2  
-                 || lineEndY != getPieceY(winningPieces[3][0]) + iGamepiece.getHeight() / 2)
+         else if(winner != -1 && (lineEndX != getPieceX(winningPieces[3][1]) + iGamepiece.getWidth() / 2  
+                 || lineEndY != getPieceY(winningPieces[3][0]) + iGamepiece.getHeight() / 2))
          {
-            tempEndX = getPieceX(winningPieces[3][1]);
-            tempEndY = getPieceY(winningPieces[3][0]);
-            tempBeginX = getPieceX(winningPieces[0][1]);
-            tempBeginY = getPieceY(winningPieces[0][0]);
-            
-            float scale = .35f;
-            
-            int xDiff = tempEndX - tempBeginX;
-            if(xDiff < 0)
-               lineEndX -= deltaT * scale;
-            else if(xDiff > 0)
-               lineEndX += deltaT * scale;
-            
-            int yDiff = tempEndY - tempBeginY;
-            if(yDiff < 0)
-               lineEndY -= deltaT * scale;
-            else if(yDiff > 0)
-               lineEndY += deltaT * scale;
-            
-            if(xDiff > 0 && lineEndX > tempEndX + iGamepiece.getWidth() / 2)
-               lineEndX = tempEndX + iGamepiece.getWidth() / 2;
-            else if(xDiff < 0 && lineEndX < tempEndX + iGamepiece.getWidth() / 2)
-               lineEndX = tempEndX + iGamepiece.getWidth() / 2;
-            
-            if(yDiff > 0 && lineEndY > tempEndY + iGamepiece.getHeight() / 2)
-               lineEndY = tempEndY + iGamepiece.getHeight() / 2;
-            else if(yDiff < 0 && lineEndY < tempEndY + iGamepiece.getHeight() / 2)
-               lineEndY = tempEndY + iGamepiece.getHeight() / 2;
+            if(lineTime <= 0)
+            {
+               tempEndX = getPieceX(winningPieces[3][1]);
+               tempEndY = getPieceY(winningPieces[3][0]);
+               tempBeginX = getPieceX(winningPieces[0][1]);
+               tempBeginY = getPieceY(winningPieces[0][0]);
+               
+               float scale = .35f;
+               
+               int xDiff = tempEndX - tempBeginX;
+               if(xDiff < 0)
+                  lineEndX -= deltaT * scale;
+               else if(xDiff > 0)
+                  lineEndX += deltaT * scale;
+               
+               int yDiff = tempEndY - tempBeginY;
+               if(yDiff < 0)
+                  lineEndY -= deltaT * scale;
+               else if(yDiff > 0)
+                  lineEndY += deltaT * scale;
+               
+               if(xDiff > 0 && lineEndX > tempEndX + iGamepiece.getWidth() / 2)
+                  lineEndX = tempEndX + iGamepiece.getWidth() / 2;
+               else if(xDiff < 0 && lineEndX < tempEndX + iGamepiece.getWidth() / 2)
+                  lineEndX = tempEndX + iGamepiece.getWidth() / 2;
+               
+               if(yDiff > 0 && lineEndY > tempEndY + iGamepiece.getHeight() / 2)
+                  lineEndY = tempEndY + iGamepiece.getHeight() / 2;
+               else if(yDiff < 0 && lineEndY < tempEndY + iGamepiece.getHeight() / 2)
+                  lineEndY = tempEndY + iGamepiece.getHeight() / 2;
+            }
+            else
+               lineTime -= deltaT;
          }
       }
       
@@ -322,7 +348,9 @@ public class Game extends BasicGame
 
    public void restart()
    {
-      startGame(gameMode);
+      if(gameMode == GameMode.VS_AI)
+         startGame(gameMode, ai.difficulty, firstPlayer);
+      else startGame(gameMode);
    }
    
    public void mouseClicked(int button, int x, int y, int clickCount)
@@ -388,22 +416,27 @@ public class Game extends BasicGame
    
    public void startGame(GameMode mode)
    {
+      startGame(mode, 3, 1);
+   }
+   
+   public void startGame(GameMode mode, int aiDifficulty, int whoGoesFirst)
+   {
+      lineTime = lineTimer;
       lineEndX = -1;
       lineEndY = -1;
       greyPieceTimer = greyPieceTimerInit;
       greyPieceTime = greyPieceTimer;
-      pieceColors = new Color[3];
-      pieceColors[0] = Color.white;
-      pieceColors[1] = new Color(0, 127, 93);
-      pieceColors[2] = new Color(0, 93, 127);
       greyPieces = new boolean[6][7];
+      winningPieces = new int[4][2];
       turn = 0;
       board = new BoardState();
       gameMode = mode;
-      whoseTurn = 1;
+      firstPlayer = whoGoesFirst;
+      turn = whoGoesFirst - 1;
+      whoseTurn = whoGoesFirst;
       gameState = GameState.PLAYER_TURN;
       if(mode == GameMode.VS_AI)
-         ai = new FourInARowAI(board);
+         ai = new FourInARowAI(board, aiDifficulty);
       winner = 0;
    }
 }

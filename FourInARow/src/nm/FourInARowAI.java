@@ -6,11 +6,7 @@ import java.util.Random;
 
 public class FourInARowAI
 {
-   enum Difficulty 
-   {
-      EASY, MEDIUM, HARD
-   }
-   Difficulty aiDifficulty;
+   int difficulty = 3;
    BoardState board;
    
    public FourInARowAI(BoardState board)
@@ -18,10 +14,10 @@ public class FourInARowAI
       this.board = board;
    }
    
-   public FourInARowAI(BoardState board, Difficulty difficulty) 
+   public FourInARowAI(BoardState board, int difficulty) 
    {
       this.board = board;
-      aiDifficulty = difficulty;
+      this.difficulty = difficulty;
    }
    
    public int[] makeMove(int depth, int aiPlayer, int humanPlayer) 
@@ -52,24 +48,33 @@ public class FourInARowAI
                if(board.winnerExists(tempState) == aiPlayer)
                {
                   scores[i] = Integer.MAX_VALUE;
+                  tempState[coordinate[0]][coordinate[1]] = 0;
                   break;
                }
                
-               // System.out.println("****(" + coordinate[0] + " " + i + ")****");
-               // Assesses possible moves in response by the player
-               for(int k = 0; k < 7; k++)
+               if(difficulty == 3)
                {
-                  int[] playerCoordinate = {board.lowestAvailableSlot(k, tempState)[0], board.lowestAvailableSlot(k, tempState)[1]};
-                  if(playerCoordinate[0] == -1)
-                     continue;
-                  
-                  tempState[playerCoordinate[0]][playerCoordinate[1]] = humanPlayer;
-                  int humanScore = boardScore(tempState, aiPlayer);
-                  // System.out.println("H: (" + playerCoordinate[0] + " " + k + ") " + humanScore);
-                  // for(int[] arr : tempState)
-                  //   System.out.println(Arrays.toString(arr));
-                  scores[i] += humanScore;
-                  tempState[playerCoordinate[0]][playerCoordinate[1]] = 0;
+                  for(int k = 0; k < 7; k++)
+                  {
+                     int[] playerCoordinate = {board.lowestAvailableSlot(k, tempState)[0], board.lowestAvailableSlot(k, tempState)[1]};
+                     if(playerCoordinate[0] == -1)
+                        continue;
+                     
+                     int humanScore;
+                     tempState[playerCoordinate[0]][playerCoordinate[1]] = humanPlayer;
+                     if(board.winnerExists(tempState) == humanPlayer)
+                     {
+                        tempState[playerCoordinate[0]][playerCoordinate[1]] = 0;
+                        scores[i] = Integer.MIN_VALUE;
+                        break;
+                     }
+                     else
+                     {
+                        humanScore = boardScore(tempState, aiPlayer);
+                        scores[i] += humanScore;
+                     }
+                     tempState[playerCoordinate[0]][playerCoordinate[1]] = 0;
+                  }
                }
                tempState[coordinate[0]][coordinate[1]] = 0;
             }
@@ -78,7 +83,7 @@ public class FourInARowAI
       
       // Gets highest score
       int highest = scores[0];
-      for(int i = 0; i < scores.length; i++)
+      for(int i = 1; i < scores.length; i++)
       {
          if(scores[i] > highest)
             highest = scores[i];
@@ -87,12 +92,18 @@ public class FourInARowAI
       ArrayList<Integer> idealMoves = new ArrayList<>();
       for(int i = 0; i < scores.length; i++)
       {
-         if((scores[i] >= highest) && board.lowestAvailableSlot(i)[0] != -1)
-            idealMoves.add(i);
+         if(board.lowestAvailableSlot(i)[0] != -1)
+         {
+            if(difficulty == 3 && (scores[i] >= highest)) // Hard ai only uses highest scoring moves
+               idealMoves.add(i);
+            else if(difficulty == 2 && Math.abs(scores[i] - highest) <= 200)
+               idealMoves.add(i);
+            else if(difficulty == 1) // Easy difficulty adds all valid moves
+               idealMoves.add(i);
+         }
+              
       }
-      
-      
-      
+
       // Selects a random move from tied high scores
       int move = 0; 
       if(idealMoves.size() > 0) 
@@ -100,6 +111,10 @@ public class FourInARowAI
       else if(idealMoves.size() == 0)
          System.out.println("COMPUTER CAN'T MOVE :(");
       
+      /*System.out.println("highest" + " " + highest);
+      System.out.println(idealMoves.toString());
+      System.out.println(Arrays.toString(scores));
+      System.out.println("Chose " + move);*/
       return new int[] {board.lowestAvailableSlot(move)[0], board.lowestAvailableSlot(move)[1]};
    }
    
