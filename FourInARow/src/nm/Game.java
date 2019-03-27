@@ -8,6 +8,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
+import org.newdawn.slick.MouseListener;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.geom.Rectangle;
@@ -40,7 +41,6 @@ public class Game extends BasicGame
                      PIECE_DISTANCE_FROM_EDGE = 20, DISTANCE_BETWEEN_PIECES = 115, BUTTON_HOVER_OFFSETX = 50, 
                      BUTTON_HOVER_OFFSETY = 30;
    private final float BUTTON_HOVER_SCALE = 1.1f;
-   
    
    // Game state integers
    private int whoseTurn, winner = 0, aiPlayer = 2, turn, mouseX, mouseY, greyPieceTime, greyPieceTimer, greyPieceTimerInit = 500, 
