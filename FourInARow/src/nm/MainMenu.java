@@ -99,12 +99,12 @@ public class MainMenu
    
    public void playHotseat()
    {
-      game.startGame(GameMode.HOTSEAT);
+      game.gameState = Game.GameState.HOTSEAT_MENU;
    }
    
    public void playOnline()
    {
-      
+      // game.gameState = Game.GameState.VS_ONLINE_PLAYER_MENU;
    }
    
    public void exit()

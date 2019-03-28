@@ -18,7 +18,7 @@ public class Game extends BasicGame
    // GAME STATE
    Random random;
    MainMenu menu;
-   GameVSAIMenu vsAiMenu;
+   GameSettingsMenu vsAiMenu, hotseatMenu, onlineMenu;
    BoardState board;
    FourInARowAI ai;
    enum GameMode {
@@ -30,6 +30,8 @@ public class Game extends BasicGame
    enum GameState {
       MAIN_MENU,
       VS_AI_MENU,
+      HOTSEAT_MENU,
+      VS_ONLINE_PLAYER_MENU,
       ANIMATION,
       GAME_OVER,
       PLAYER_TURN
@@ -70,7 +72,9 @@ public class Game extends BasicGame
       super(name);
       
       menu = new MainMenu(this);
-      vsAiMenu = new GameVSAIMenu(this);
+      vsAiMenu = new GameSettingsMenu(this, GameSettingsMenu.GameModes.VS_AI);
+      hotseatMenu = new GameSettingsMenu(this, GameSettingsMenu.GameModes.HOT_SEAT);
+      onlineMenu = new GameSettingsMenu(this, GameSettingsMenu.GameModes.ONLINE);
       gameState = GameState.MAIN_MENU;
    }
 
@@ -85,6 +89,11 @@ public class Game extends BasicGame
       else if(gameState == GameState.VS_AI_MENU)
       {
          vsAiMenu.render(gc, g);
+         return;
+      }
+      else if(gameState == GameState.HOTSEAT_MENU)
+      {
+         hotseatMenu.render(gc, g);
          return;
       }
       
@@ -201,6 +210,8 @@ public class Game extends BasicGame
       random = new Random();
       menu.init();
       vsAiMenu.init();
+      hotseatMenu.init();
+      onlineMenu.init();
    }
 
    @Override
@@ -214,6 +225,11 @@ public class Game extends BasicGame
       else if(gameState == GameState.VS_AI_MENU)
       {
          vsAiMenu.update(gc, deltaT);
+         return;
+      }
+      else if(gameState == GameState.HOTSEAT_MENU)
+      {
+         hotseatMenu.update(gc, deltaT);
          return;
       }
       

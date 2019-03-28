@@ -11,7 +11,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 import nm.Game.GameMode;
 
-public class GameVSAIMenu
+public class GameSettingsMenu
 {
    Image menuBackground, text_player, text_computer, players_background,
          checkbox, checkMark, radialButton, playButton, slider, slider_background;
@@ -25,10 +25,15 @@ public class GameVSAIMenu
    int selectedDifficulty = 3;
    int[][] playerColorSettingsPositions = {{550, 80}, {550, 315}};
    float[] colors;
+   enum GameModes {
+      VS_AI, HOT_SEAT, ONLINE
+   }
+   GameModes gameMode;
    
-   public GameVSAIMenu(Game g)
+   public GameSettingsMenu(Game g, GameModes mode)
    {
       game = g;
+      gameMode = mode;
    }
    
    public void init() throws SlickException
@@ -90,70 +95,78 @@ public class GameVSAIMenu
       g.drawImage(text_computer, 130, 165);
       g.setColor(Color.black);
       
-      // Draw checkbox
-      g.drawString("Computer Goes First:", 155, 225);
-      Color c = Color.white;
-      if(mousePressed && checkboxHover)
-         c = Color.gray;
+      // Draw computer goes first checkbox and text
       float scale = 1.0f;
-      if(checkboxHover)
-         scale = 1.15f;
-      checkbox.draw(checkboxRect.getMinX() - (scale - 1) * 8, checkboxRect.getMinY() - (scale - 1) * 8, scale, c);
-      if(computerGoesFirst)
-         checkMark.draw(checkboxRect.getMinX(), checkboxRect.getMinY() - 3);
+      Color c = Color.white;
+      if(gameMode == GameModes.VS_AI)
+      {
+         g.drawString("Computer Goes First:", 155, 225);
+         c = Color.white;
+         if(mousePressed && checkboxHover)
+            c = Color.gray;
+         scale = 1.0f;
+         if(checkboxHover)
+            scale = 1.15f;
+         checkbox.draw(checkboxRect.getMinX() - (scale - 1) * 8, checkboxRect.getMinY() - (scale - 1) * 8, scale, c);
+         if(computerGoesFirst)
+            checkMark.draw(checkboxRect.getMinX(), checkboxRect.getMinY() - 3);
+      }
       
       // Draw difficulty settings
-      g.drawString("AI Difficulty", 605, 185);
-      
-      g.drawString("Easy", easyRect.getMinX() - 10, easyRect.getMinY() + 18);
-      g.drawString("Medium", mediumRect.getMinX() - 18, mediumRect.getMinY() + 18);
-      g.drawString("Hard", hardRect.getMinX() - 10, hardRect.getMinY() + 18);
-      
-      scale = 1.0f;
-      if(easyHover)
-         scale = 1.15f;
-      if(easyHover && mousePressed)
-         c = Color.gray;
-      else 
-         c = Color.white;
-      radialButton.draw(easyRect.getMinX() - (scale - 1) * 8, easyRect.getMinY() - (scale - 1) * 8, scale, c);
-      
-      scale = 1.0f;
-      if(mediumHover)
-         scale = 1.15f;
-      if(mediumHover && mousePressed)
-         c = Color.gray;
-      else 
-         c = Color.white;
-      radialButton.draw(mediumRect.getMinX() - (scale - 1) * 8, mediumRect.getMinY() - (scale - 1) * 8, scale, c);
-      
-      scale = 1.0f;
-      if(hardHover)
-         scale = 1.15f;
-      if(hardHover && mousePressed)
-         c = Color.gray;
-      else 
-         c = Color.white;
-      radialButton.draw(hardRect.getMinX() - (scale - 1) * 8, hardRect.getMinY() - (scale - 1) * 8, scale, c);
-      
-      float tempX = 0, tempY = 0;
-      if(selectedDifficulty == 1)
+      if(gameMode == GameModes.VS_AI)
       {
-         tempX = easyRect.getMinX();
-         tempY = easyRect.getMinY();
+         g.drawString("AI Difficulty", 605, 185);
+         
+         g.drawString("Easy", easyRect.getMinX() - 10, easyRect.getMinY() + 18);
+         g.drawString("Medium", mediumRect.getMinX() - 18, mediumRect.getMinY() + 18);
+         g.drawString("Hard", hardRect.getMinX() - 10, hardRect.getMinY() + 18);
+         
+         scale = 1.0f;
+         if(easyHover)
+            scale = 1.15f;
+         if(easyHover && mousePressed)
+            c = Color.gray;
+         else 
+            c = Color.white;
+         radialButton.draw(easyRect.getMinX() - (scale - 1) * 8, easyRect.getMinY() - (scale - 1) * 8, scale, c);
+         
+         scale = 1.0f;
+         if(mediumHover)
+            scale = 1.15f;
+         if(mediumHover && mousePressed)
+            c = Color.gray;
+         else 
+            c = Color.white;
+         radialButton.draw(mediumRect.getMinX() - (scale - 1) * 8, mediumRect.getMinY() - (scale - 1) * 8, scale, c);
+         
+         scale = 1.0f;
+         if(hardHover)
+            scale = 1.15f;
+         if(hardHover && mousePressed)
+            c = Color.gray;
+         else 
+            c = Color.white;
+         radialButton.draw(hardRect.getMinX() - (scale - 1) * 8, hardRect.getMinY() - (scale - 1) * 8, scale, c);
+         
+         float tempX = 0, tempY = 0;
+         if(selectedDifficulty == 1)
+         {
+            tempX = easyRect.getMinX();
+            tempY = easyRect.getMinY();
+         }
+         else if(selectedDifficulty == 2)
+         {
+            tempX = mediumRect.getMinX();
+            tempY = mediumRect.getMinY();
+         }
+         else
+         {
+            tempX = hardRect.getMinX();
+            tempY = hardRect.getMinY();
+         }
+         g.setColor(Color.black);
+         g.fillOval(tempX + 3, tempY + 3, 10, 10);
       }
-      else if(selectedDifficulty == 2)
-      {
-         tempX = mediumRect.getMinX();
-         tempY = mediumRect.getMinY();
-      }
-      else
-      {
-         tempX = hardRect.getMinX();
-         tempY = hardRect.getMinY();
-      }
-      g.setColor(Color.black);
-      g.fillOval(tempX + 3, tempY + 3, 10, 10);
       
       // Draw play button
       scale = 1.0f;
@@ -229,8 +242,7 @@ public class GameVSAIMenu
          
          if(playHover)
          {
-            int firstPlayer = computerGoesFirst ? 2 : 1;
-            game.startGame(GameMode.VS_AI, selectedDifficulty, firstPlayer);
+            play();
          }
          
          int currentSlider = -1;
@@ -283,6 +295,19 @@ public class GameVSAIMenu
       Game.pieceColors[2] = new Color(c2RGB.getRed(), c2RGB.getGreen(), c2RGB.getBlue());
    }
    
+   public void play()
+   {
+      if(gameMode == GameModes.VS_AI)
+      {
+         int firstPlayer = computerGoesFirst ? 2 : 1;
+         game.startGame(GameMode.VS_AI, selectedDifficulty, firstPlayer);
+      }
+      else if(gameMode == GameModes.HOT_SEAT)
+      {
+         game.startGame(GameMode.HOTSEAT);
+      }
+   }
+      
    public int normalizeSliderCoordinates(int coordinate, Rectangle rect)
    {
       if(coordinate > rect.getMaxX() - 6)
